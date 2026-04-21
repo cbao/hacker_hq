@@ -1,0 +1,78 @@
+.scene-stage {
+  overflow: hidden;
+}
+
+.scene-stage-body {
+  padding: 20px 22px 24px;
+  display: grid;
+  gap: 18px;
+}
+
+.scene-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.scene {
+  position: relative;
+  width: 1200px;
+  height: 540px;
+  border: 1px solid rgba(152, 216, 148, 0.16);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 14% 0%, rgba(143, 207, 186, 0.14), transparent 24%),
+    radial-gradient(circle at 86% 4%, rgba(240, 191, 116, 0.16), transparent 22%),
+    linear-gradient(180deg, rgba(10, 24, 17, 0.98), rgba(6, 15, 10, 0.98) 48%, rgba(4, 9, 7, 0.99) 100%),
+    #06110a;
+  box-shadow:
+    0 28px 46px rgba(0, 0, 0, 0.34),
+    0 0 0 1px rgba(152, 216, 148, 0.08) inset,
+    0 0 46px rgba(152, 216, 148, 0.06);
+}
+
+.scene::before,
+.scene::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.scene::before {
+  background:
+    radial-gradient(circle at 50% 12%, rgba(255, 255, 255, 0.04), transparent 32%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.18));
+  opacity: 0.8;
+  animation: scenePulse 8s ease-in-out infinite;
+}
+
+.scene::after {
+  background:
+    repeating-linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.016),
+      rgba(255, 255, 255, 0.016) 1px,
+      transparent 1px,
+      transparent 5px
+    ),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 18%, transparent 72%, rgba(0, 0, 0, 0.12));
+  opacity: 0.44;
+}
+
+@keyframes scenePulse {
+  0%,
+  100% {
+    opacity: 0.66;
+  }
+
+  50% {
+    opacity: 0.88;
+  }
+}
+
+@media (max-width: 720px) {
+  .scene-stage-body {
+    padding: 14px;
+  }
+}

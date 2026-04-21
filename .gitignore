@@ -1,0 +1,17 @@
+node_modules/
+dist/
+__pycache__/
+.DS_Store
+.env*
+*.local
+
+# Claude Code working artifacts (not meant for OSS)
+.claude/worktrees/
+.claude/roadmap_sync.json
+.claude/memory/
+.claude/settings.local.json
+
+# Agent pipeline artifacts (not meant for OSS)
+summary/
+roadmap/
+archive/

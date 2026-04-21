@@ -1,0 +1,115 @@
+.scene-agent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 104px;
+  display: grid;
+  justify-items: center;
+  will-change: transform;
+}
+
+.sprite-wrapper {
+  width: 104px;
+  height: 128px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.sprite-wrapper[data-state='cooking'] {
+  filter: drop-shadow(0 0 18px rgba(255, 176, 79, 0.2));
+}
+
+.agent-shadow {
+  width: 74px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(4, 9, 7, 0.7) 0%, rgba(0, 0, 0, 0) 72%);
+  margin: -8px auto 0;
+  filter: blur(4px);
+  transition: box-shadow 0.4s ease, transform 0.4s ease, opacity 0.4s ease;
+}
+
+.scene-agent[data-motion='walking_to_meet'] .agent-shadow,
+.scene-agent[data-motion='walking_back'] .agent-shadow,
+.scene-agent[data-motion='walking_to_bed'] .agent-shadow,
+.scene-agent[data-motion='walking_to_kitchen'] .agent-shadow,
+.scene-agent[data-motion='entering'] .agent-shadow,
+.scene-agent[data-motion='leaving'] .agent-shadow {
+  transform: scale(0.9);
+  opacity: 0.78;
+}
+
+.sprite-wrapper[data-state='cooking'] ~ .agent-shadow {
+  box-shadow: 0 0 30px 14px rgba(255, 164, 63, 0.14);
+}
+
+.sprite-wrapper[data-state='sleeping'] ~ .agent-shadow {
+  box-shadow: 0 0 24px 10px rgba(143, 207, 186, 0.12);
+}
+
+.sprite-wrapper[data-state='error'] ~ .agent-shadow {
+  box-shadow: 0 0 26px 12px rgba(216, 119, 130, 0.16);
+}
+
+.scene-agent-label {
+  margin-top: 2px;
+  font-size: 0.66rem;
+  text-align: center;
+  background:
+    linear-gradient(180deg, rgba(12, 25, 18, 0.92), rgba(7, 16, 12, 0.88)),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06), transparent 22%);
+  padding: 7px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid rgba(152, 216, 148, 0.2);
+  box-shadow:
+    0 12px 20px rgba(0, 0, 0, 0.22),
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+  transition: color 0.28s ease, opacity 0.28s ease, border-color 0.28s ease, transform 0.28s ease;
+  backdrop-filter: blur(10px);
+}
+
+.scene-agent-label[data-state='cooking'] {
+  color: var(--accent-strong);
+  opacity: 1;
+  border-color: rgba(240, 191, 116, 0.34);
+}
+
+.scene-agent-label[data-state='sleeping'] {
+  color: var(--cyan);
+  opacity: 0.88;
+  border-color: rgba(143, 207, 186, 0.28);
+}
+
+.scene-agent-label[data-state='error'] {
+  color: var(--danger);
+  opacity: 1;
+  border-color: rgba(216, 119, 130, 0.28);
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--danger);
+  box-shadow: 0 0 12px rgba(216, 119, 130, 0.34);
+  animation: pulse 0.92s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.3;
+  }
+}

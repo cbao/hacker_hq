@@ -1,0 +1,67 @@
+.event-log {
+  border: 1px solid rgba(152, 216, 148, 0.12);
+  border-radius: var(--radius-md);
+  background: rgba(6, 14, 9, 0.74);
+  padding: 10px 12px;
+  max-height: 240px;
+  overflow-y: auto;
+  display: grid;
+  gap: 2px;
+}
+
+.log-row {
+  display: grid;
+  grid-template-columns: 74px minmax(140px, 180px) auto auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 8px 6px;
+  border-radius: 10px;
+  transition: background 0.15s ease;
+}
+
+.log-row:hover {
+  background: rgba(152, 216, 148, 0.05);
+}
+
+.log-ts,
+.log-event {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.log-ts {
+  color: var(--text-dim);
+}
+
+.log-name {
+  color: var(--text-strong);
+  font-size: 0.8rem;
+}
+
+.log-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.log-summary {
+  min-width: 0;
+  color: var(--text-main);
+  line-height: 1.5;
+}
+
+@media (max-width: 960px) {
+  .log-row {
+    grid-template-columns: 70px auto;
+    gap: 8px 12px;
+  }
+
+  .log-name,
+  .log-dot,
+  .log-event,
+  .log-summary {
+    grid-column: 2;
+  }
+}
