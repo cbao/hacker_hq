@@ -2,7 +2,7 @@
 
 Dashboard for watching your Claude Code agents work in real-time.
 
-![Hacker HQ screenshot](docs/hacker_hq.png)
+![Hacker HQ demo](docs/hacker_hq.gif)
 
 ## What it does
 
