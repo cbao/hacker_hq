@@ -38,25 +38,27 @@ Then use the `Read` tool on `$SETTINGS` to inspect current contents before editi
 
 ### Step 2 — Define the target hooks
 
-The nine entries to merge into `settings.hooks`:
+Claude Code's hook schema requires every entry in an event array to be a `{matcher, hooks: [...]}` wrapper, where `matcher` is a tool filter (empty string matches all) and `hooks` is the list of actions to run. The nine Hacker HQ entries (with empty matcher so they fire for everything) look like this when merged into `settings.hooks`:
 
 ```json
 {
-  "PostToolUse":        [{ "type": "http", "url": "http://localhost:3001/hook" }],
-  "PostToolUseFailure": [{ "type": "http", "url": "http://localhost:3001/hook" }],
-  "Stop":               [{ "type": "http", "url": "http://localhost:3001/hook" }],
-  "SubagentStop":       [{ "type": "http", "url": "http://localhost:3001/hook" }],
-  "TaskCompleted":      [{ "type": "http", "url": "http://localhost:3001/hook" }],
-  "SubagentStart":      [{ "type": "command", "command": "curl -s -X POST http://localhost:3001/hook -H \"Content-Type: application/json\" -d @- > /dev/null 2>&1 || true" }],
-  "TeammateIdle":       [{ "type": "command", "command": "curl -s -X POST http://localhost:3001/hook -H \"Content-Type: application/json\" -d @- > /dev/null 2>&1 || true" }],
-  "SessionStart":       [{ "type": "command", "command": "curl -s -X POST http://localhost:3001/hook -H \"Content-Type: application/json\" -d @- > /dev/null 2>&1 || true" }],
-  "SessionEnd":         [{ "type": "command", "command": "curl -s -X POST http://localhost:3001/hook -H \"Content-Type: application/json\" -d @- > /dev/null 2>&1 || true" }]
+  "PostToolUse":        [{ "matcher": "", "hooks": [{ "type": "http", "url": "http://localhost:3001/hook" }] }],
+  "PostToolUseFailure": [{ "matcher": "", "hooks": [{ "type": "http", "url": "http://localhost:3001/hook" }] }],
+  "Stop":               [{ "matcher": "", "hooks": [{ "type": "http", "url": "http://localhost:3001/hook" }] }],
+  "SubagentStop":       [{ "matcher": "", "hooks": [{ "type": "http", "url": "http://localhost:3001/hook" }] }],
+  "TaskCompleted":      [{ "matcher": "", "hooks": [{ "type": "http", "url": "http://localhost:3001/hook" }] }],
+  "SubagentStart":      [{ "matcher": "", "hooks": [{ "type": "command", "command": "curl -s -X POST http://localhost:3001/hook -H \"Content-Type: application/json\" -d @- > /dev/null 2>&1 || true" }] }],
+  "TeammateIdle":       [{ "matcher": "", "hooks": [{ "type": "command", "command": "curl -s -X POST http://localhost:3001/hook -H \"Content-Type: application/json\" -d @- > /dev/null 2>&1 || true" }] }],
+  "SessionStart":       [{ "matcher": "", "hooks": [{ "type": "command", "command": "curl -s -X POST http://localhost:3001/hook -H \"Content-Type: application/json\" -d @- > /dev/null 2>&1 || true" }] }],
+  "SessionEnd":         [{ "matcher": "", "hooks": [{ "type": "command", "command": "curl -s -X POST http://localhost:3001/hook -H \"Content-Type: application/json\" -d @- > /dev/null 2>&1 || true" }] }]
 }
 ```
 
+Never write a bare `{type, url}` / `{type, command}` object directly into an event array — Claude Code will reject the whole settings file with a "hooks: Expected array, but received undefined" error and skip it entirely.
+
 ### Step 3 — Merge with Python (preserve everything else)
 
-Use the `Bash` tool to run this Python one-shot. It loads the file, merges per-event arrays (skipping duplicates that match URL or command), and writes back pretty-printed JSON.
+Use the `Bash` tool to run this Python one-shot. It loads the file, adds an HQ hook under a `{matcher: "", hooks: [...]}` wrapper in each event array (skipping if an HQ hook is already present in any wrapper), strips legacy malformed bare HQ entries, and writes back pretty-printed JSON.
 
 ```bash
 python3 - <<'PY'
@@ -72,35 +74,54 @@ http_events = ["PostToolUse", "PostToolUseFailure", "Stop", "SubagentStop", "Tas
 cmd_events  = ["SubagentStart", "TeammateIdle", "SessionStart", "SessionEnd"]
 
 hooks = data.setdefault("hooks", {})
-added, skipped = 0, 0
 
-def has_http(arr):
-    return any(isinstance(h, dict) and h.get("type") == "http" and h.get("url") == HQ_URL for h in arr)
+def is_hq_http(h):
+    return isinstance(h, dict) and h.get("type") == "http" and h.get("url") == HQ_URL
 
-def has_cmd(arr):
-    return any(isinstance(h, dict) and h.get("type") == "command" and h.get("command") == HQ_CMD for h in arr)
+def is_hq_cmd(h):
+    return isinstance(h, dict) and h.get("type") == "command" and h.get("command") == HQ_CMD
 
+def merge(event_name, hq_hook, is_hq):
+    arr = hooks.setdefault(event_name, [])
+    # Strip legacy bare HQ entries (wrong shape — they break the settings parser)
+    bare_stripped = 0
+    cleaned = []
+    for entry in arr:
+        if is_hq(entry):
+            bare_stripped += 1
+            continue
+        cleaned.append(entry)
+    # Check whether a correctly-wrapped HQ hook already exists
+    has_wrapped = any(
+        isinstance(entry, dict)
+        and isinstance(entry.get("hooks"), list)
+        and any(is_hq(h) for h in entry["hooks"])
+        for entry in cleaned
+    )
+    if not has_wrapped:
+        cleaned.append({"matcher": "", "hooks": [hq_hook]})
+        added = 1
+    else:
+        added = 0
+    hooks[event_name] = cleaned
+    return added, bare_stripped, has_wrapped
+
+added = skipped = bare_total = 0
 for ev in http_events:
-    arr = hooks.setdefault(ev, [])
-    if has_http(arr):
-        skipped += 1
-    else:
-        arr.append({"type": "http", "url": HQ_URL})
-        added += 1
-
+    a, b, had = merge(ev, {"type": "http", "url": HQ_URL}, is_hq_http)
+    added += a; bare_total += b; skipped += 1 if had else 0
 for ev in cmd_events:
-    arr = hooks.setdefault(ev, [])
-    if has_cmd(arr):
-        skipped += 1
-    else:
-        arr.append({"type": "command", "command": HQ_CMD})
-        added += 1
+    a, b, had = merge(ev, {"type": "command", "command": HQ_CMD}, is_hq_cmd)
+    added += a; bare_total += b; skipped += 1 if had else 0
 
 with open(p, "w") as f:
     json.dump(data, f, indent=2)
     f.write("\n")
 
-print(f"Hacker HQ hooks: added {added}, already present {skipped}, total 9 events")
+msg = f"Hacker HQ hooks: added {added}, already present {skipped}, total 9 events"
+if bare_total:
+    msg += f" (fixed {bare_total} legacy malformed entries)"
+print(msg)
 PY
 ```
 
@@ -112,7 +133,7 @@ Print the count line from the Python block and tell the user:
 
 ## /uninstall-hooks
 
-When the user invokes `/uninstall-hooks` (or asks to remove Hacker HQ hooks), run the inverse: strip only the entries that point at `localhost:3001/hook`, leave every other hook alone. Do **not** delete the whole `hooks` key.
+When the user invokes `/uninstall-hooks` (or asks to remove Hacker HQ hooks), run the inverse: strip only the entries that point at `localhost:3001/hook`, leave every other hook alone. The script must look inside both the modern `{matcher, hooks}` wrappers and any legacy bare entries. If a wrapper ends up with an empty `hooks` list, remove that wrapper. If an event array ends up empty, remove that event key. Do **not** delete the whole `hooks` key unless it is completely empty.
 
 ```bash
 python3 - <<'PY'
@@ -134,9 +155,22 @@ def is_hq(h):
     return False
 
 for ev in list(hooks.keys()):
-    before = len(hooks[ev])
-    hooks[ev] = [h for h in hooks[ev] if not is_hq(h)]
-    removed += before - len(hooks[ev])
+    new_entries = []
+    for entry in hooks[ev]:
+        # Legacy bare HQ entry — drop it entirely
+        if is_hq(entry):
+            removed += 1
+            continue
+        # Modern matcher-wrapped entry — strip HQ hooks from the inner list
+        if isinstance(entry, dict) and isinstance(entry.get("hooks"), list):
+            before = len(entry["hooks"])
+            entry["hooks"] = [h for h in entry["hooks"] if not is_hq(h)]
+            removed += before - len(entry["hooks"])
+            if not entry["hooks"]:
+                # Wrapper is now empty — drop it (don't leave {matcher:"",hooks:[]})
+                continue
+        new_entries.append(entry)
+    hooks[ev] = new_entries
     if not hooks[ev]:
         del hooks[ev]
 
