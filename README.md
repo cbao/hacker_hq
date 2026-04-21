@@ -155,5 +155,4 @@ Set these in a `.env` file at the project root if you're running the relay on a 
 No database. No external services. No API keys.
 
 ## License
-
-See [LICENSE](LICENSE).
+MIT
