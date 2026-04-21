@@ -32,13 +32,13 @@ export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const [clock, setClock] = useState(() => formatClock(new Date()));
-  const [legacyTheme, setLegacyTheme] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    return window.localStorage.getItem('hq-theme') === 'legacy';
-  });
   const agentIds = Object.keys(agents);
   const viewName = location.pathname.slice(1) || 'scene';
   const showLog = ['/scene', '/messages'].includes(location.pathname);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = 'legacy';
+  }, []);
 
   useEffect(() => {
     const tick = () => setClock(formatClock(new Date()));
@@ -46,16 +46,6 @@ export default function App() {
     const interval = setInterval(tick, 30_000);
     return () => clearInterval(interval);
   }, []);
-
-  useEffect(() => {
-    const mode = legacyTheme ? 'legacy' : 'readable';
-    document.documentElement.dataset.theme = mode;
-    try {
-      window.localStorage.setItem('hq-theme', mode);
-    } catch {
-      /* ignore quota/privacy-mode errors */
-    }
-  }, [legacyTheme]);
 
   return (
     <div className="app">
@@ -83,16 +73,7 @@ export default function App() {
             <span className={`app-status-chip${connected ? ' is-live' : ' is-offline'}`}>
               {connected ? 'live signal' : 'offline'}
             </span>
-            <button
-              type="button"
-              className="app-theme-toggle"
-              onClick={() => setLegacyTheme((prev) => !prev)}
-              aria-pressed={legacyTheme}
-              title={legacyTheme ? 'Switch to readable Phosphor Boost palette' : 'Revert to legacy phosphor palette'}
-            >
-              {legacyTheme ? '[ readable ]' : '[ legacy ]'}
-            </button>
-            <span className="app-clock">{clock}</span>
+<span className="app-clock">{clock}</span>
             <MonitorSigil />
           </div>
         </header>
