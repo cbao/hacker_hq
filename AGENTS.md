@@ -2,13 +2,13 @@
 
 ## Project Overview
 
-Pixel-art web UI for watching Codex agents work in real-time. Agents appear as hackers with chat bubbles. Dual-channel reporting: hooks provide automatic heartbeats, agents self-report semantic status via `curl`. Express relay server, React frontend. Two views: **Scene** (pixel-art agent sprites with chat bubbles) and **Messages** (iMessage-style conversation wall). All local, no external infrastructure.
+Web UI for watching Codex agents work in real-time. Agents appear as robots with chat bubbles. Dual-channel reporting: hooks provide automatic heartbeats, agents self-report semantic status via `curl`. Express relay server, React frontend. Two views: **Scene** (robot agent sprites with chat bubbles) and **Messages** (iMessage-style conversation wall). All local, no external infrastructure.
 
 ## Tech Stack
 
 - **Backend:** Express + `ws` (WebSocket), TypeScript, run via `npx tsx server.ts`
 - **Frontend:** React + TypeScript (Vite), Zustand state management, `reconnecting-websocket`, `react-router-dom`
-- **Styling:** CSS pixel art sprites (no image assets), CSS animations for bubbles
+- **Styling:** CSS robot sprites (no image assets), CSS animations for bubbles
 - **No external deps:** No Redis, no database, no API keys — everything is localhost
 
 ## Architecture
@@ -26,7 +26,7 @@ Relay Server (Express + ws, port 3001)
 Frontend (React + Vite, port 5173)
   ├── reconnecting-websocket → Zustand store
   ├── Routes: /scene, /messages
-  ├── Scene: pixel-art agent sprites (3 states: working/idle/error) with chat bubbles
+  ├── Scene: robot agent sprites (3 states: working/idle/error) with chat bubbles
   ├── Messages: iMessage-style conversation wall
   └── Transmission Log (last 50 events)
 ```
@@ -76,11 +76,11 @@ src/
     PhoneScreen.tsx       — iMessage-style phone frame
     ConversationThread.tsx — Thread of messages within a conversation
     MessageBubble.tsx     — Single iMessage-style bubble
-    ChatBubble.tsx        — Animated pixel-art speech bubble
+    ChatBubble.tsx        — Animated speech bubble
     EventLog.tsx          — Transmission log (last 50 events)
   sprites/
-    PixelHacker.tsx       — CSS box-shadow pixel art (3 states)
-    SceneBackground.tsx   — Pixel-art background for the scene
+    PixelHacker.tsx       — CSS robot avatar (3 states)
+    SceneBackground.tsx   — Background for the scene
   utils/
     deriveConversations.ts — Group events into conversation threads
   styles/                 — CSS files per component

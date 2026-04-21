@@ -1,6 +1,6 @@
 # Hacker HQ
 
-Pixel-art dashboard for watching your Claude Code agents work in real-time.
+Dashboard for watching your Claude Code agents work in real-time.
 
 ![Screenshot](docs/screenshot.png)
 
@@ -54,7 +54,7 @@ Your agents will start appearing on the dashboard as they work.
 
 1. A Claude Code hook fires on each tool use and posts a payload to the relay server.
 2. The relay server normalizes the event, updates in-memory state, and broadcasts it over WebSocket.
-3. The React frontend subscribes via a reconnecting WebSocket and renders each agent as a pixel sprite, with chat bubbles for the latest event and a threaded message wall for full history.
+3. The React frontend subscribes via a reconnecting WebSocket and renders each agent as a robot sprite, with chat bubbles for the latest event and a threaded message wall for full history.
 
 Agents can also `POST /event` directly from curl for semantic status updates ("starting task X", "encountered error Y"), giving you richer signals than hooks alone provide.
 
@@ -76,7 +76,7 @@ Agents can also `POST /event` directly from curl for semantic status updates ("s
                              │
 ┌────────────────────────────▼─────────────────────────────┐
 │  Frontend (React + Vite, :5173)                          │
-│    ├── Scene view     — pixel-art agent sprites          │
+│    ├── Scene view     — robot agent sprites               │
 │    └── Messages view  — iMessage-style threaded log      │
 └──────────────────────────────────────────────────────────┘
 ```
@@ -150,7 +150,7 @@ Set these in a `.env` file at the project root if you're running the relay on a 
 - **Frontend** — React 19, Vite 7, TypeScript
 - **State** — Zustand 5
 - **WebSocket client** — reconnecting-websocket
-- **Styling** — CSS pixel-art sprites (no image assets), CSS animations
+- **Styling** — CSS robot sprites (no image assets), CSS animations
 
 No database. No external services. No API keys.
 
